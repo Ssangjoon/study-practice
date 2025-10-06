@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 public class Money {
+
     public static final Money ZERO = Money.wons(0);
 
     private final BigDecimal amount;
@@ -49,7 +50,7 @@ public class Money {
             return false;
         }
 
-        Money other = (Money)object;
+        Money other = (Money) object;
         return Objects.equals(amount.doubleValue(), other.amount.doubleValue());
     }
 

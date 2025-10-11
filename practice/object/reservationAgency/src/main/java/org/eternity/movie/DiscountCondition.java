@@ -12,6 +12,23 @@ public class DiscountCondition {
     private LocalTime startTime;
     private LocalTime endTime;
 
+    public boolean isDiscountable(Screening screening) {
+        if (type == DiscountConditionType.PERIOD){
+            return isDiscountableByPeriod(screening);
+        }
+        return isDiscountableBySequence(screening);
+    }
+
+    private boolean isDiscountableByPeriod(Screening screening) {
+        return dayOfWeek == screening.getWhenScreened().getDayOfWeek()
+            && startTime.compareTo(screening.getWhenScreened().toLocalTime()) <= 0
+            && endTime.compareTo(screening.getWhenScreened().toLocalTime()) >= 0;
+    }
+
+    private boolean isDiscountableBySequence(Screening screening) {
+        return sequence == screening.getSequence();
+    }
+
     public DiscountConditionType getType() {
         return type;
     }

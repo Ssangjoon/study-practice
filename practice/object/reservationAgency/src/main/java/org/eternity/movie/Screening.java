@@ -1,5 +1,7 @@
 package org.eternity.movie;
 
+import org.eternity.money.Money;
+
 import java.time.LocalDateTime;
 
 public class Screening {
@@ -7,27 +9,21 @@ public class Screening {
     private int sequence;
     private LocalDateTime whenScreened;
 
-    public Movie getMovie() {
-        return movie;
+    public Screening(Movie movie, int sequence, LocalDateTime whenScreened) {
+        this.movie = movie;
+        this.sequence = sequence;
+        this.whenScreened = whenScreened;
     }
 
-    public void setMovie(Movie movie) {
-        this.movie = movie;
+    public Money calculateFee(int audienceCount) {
+        return movie.calculateMovieFee(this).times(audienceCount);
     }
 
     public LocalDateTime getWhenScreened() {
         return whenScreened;
     }
 
-    public void setWhenScreened(LocalDateTime whenScreened) {
-        this.whenScreened = whenScreened;
-    }
-
     public int getSequence() {
         return sequence;
-    }
-
-    public void setSequence(int sequence) {
-        this.sequence = sequence;
     }
 }

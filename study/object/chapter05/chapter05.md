@@ -137,4 +137,55 @@ Screening이 Movie의 내부 구현에 대한 어떤 지식도 없이 전 송할
 따라서 메시지가 변경되지 않는 한 Movie에 어떤 수정을 가하더라도 Screening에는 영향을 미치지 않는다.  
 메시지를 기반으로 협력을 구성하면 결합도를 느슨하게 유지할 수 있다.
 
-### 
+### DiscountCondition 개선
+
+일반적으로 설계를 개선하는 작업은 변경의 이유가 하나 이상인 클래스를 찾는 것으로부터 시작하는 것이 좋다.  
+
+```java
+public class DiscountCondition {
+    private DiscountConditionType type;
+    private int sequence;
+    private DayOfWeek dayOfWeek;
+    private LocalTime startTime;
+    private LocalTime endTime;
+
+    public boolean isSatisfiedBy(Screening screening) {
+        if (type == DiscountConditionType.PERIOD) {
+            return isSatisfiedByPeriod(screening);
+        }
+
+        return isSatisfiedBySequence(screening);
+    }
+
+    private boolean isSatisfiedByPeriod(Screening screening) {
+        return dayOfWeek.equals(screening.getWhenScreened().getDayOfWeek()) &&
+                startTime.compareTo(screening.getWhenScreened().toLocalTime()) <= 0 &&
+                endTime.compareTo(screening.getWhenScreened().toLocalTime()) <= 0;
+    }
+
+    private boolean isSatisfiedBySequence(Screening screening) {
+        return sequence == screening.getSequence();
+    }
+}
+```
+DiscountCondition은 하나 이상의 변경 이유를 가지기 때문에 응집도가 낮다.  
+응집도가 낮다는 것은 서로 연관성이 없는 기능이나 데이터가 하나의 클래스 안에 뭉쳐져 있다는 것을 의미한다.  
+따라서 낮은 응집도가 초래하는 문제를 해결하기 위해서는 변경의 이유에 따라 클래스를 분리해야 한다
+
+#### 클래스 응집도 판단하기
+
+1. 클래스가 하나 이상의 변경 이유를 가지고 있는가.
+   클래스가 하나 이상의 이유로 변경돼야 한다면 응집도가 낮은 것이다. 변경의 이유를 기준으로 클래스를 분리하라.
+
+2. 클래스의 속성이 서로 다른 시점에 초기화되는가.  
+   클래스의 인스턴스를 초기화하는 시점에 경우에 따라 서로 다른 속성들을 초기화하고 있다면 응집도가 낮은 것이다. 초기화되는 속성의 그룹을 기준으로 클래스를 분리하라.
+
+3. 메서드 별로 속성을 사용하는 그룹이 나뉘는가.  
+   메서드 그룹이 속성 그룹을 사용하는지 여부로 나뉜다면 응집도가 낮은 것이다. 이들 그룹을 기준으로 클래스를 분리하라.
+   (isSatisfiedByPeriod와 isSatisfiedBySequence를 보면 사용되는 속성의 그룹이 다른 걸 알 수 이싸. )
+
+메서드의 크기가 너무 커서 긴 코드 라인 속에 문제가 숨겨져 명확하게 보이지 않을 수도 있다.  
+이 경우 긴 메서드를 응집도 높은 작은 메서드로 잘게 분해해 나가면 숨겨져 있던 문제점이 명확하게 드러나는 경우가 많다.
+
+#### 타입 분리 
+DiscountCondition의 가장 큰 문제는 순번 조건과 기간 조건이라는 두 개의 독립적인 타입이 하나의 클래스 안에 공존하고 있다는 점이다.  

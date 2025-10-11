@@ -166,7 +166,7 @@ DiscountPolicy를 **추상클래스로 구현하므로써 자식 클래스들이
 추상화를 이용해 상위 정책을 정의하는 객체지향의 메커니즘을 활용하고 있기 때문이다.
 
 ```java
-import org.eternity.movie.step01.Screening;
+import org.eternity.movie.Screening;
 
 public class Movie {
 

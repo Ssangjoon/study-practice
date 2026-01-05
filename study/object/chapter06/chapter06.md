@@ -126,6 +126,7 @@
 한 문장으로 표현하면 "질문이 답변을 수정해서는 안 된다"는 것이다.  
 그렇다면 명령과 쿼리를 분리해서 얻게 되는 장점은 무엇일까? 
 
+### 반복일정의 명령과 쿼리 분리하기
 ```
 public class Event {
     private String subject;
@@ -160,5 +161,37 @@ public class Event {
     }
 }
 ```
-
 isSatisfied 메서드는 Event 객체가 인자로 전달된 RecurringSchedule 객체와 일치하는지를 검사한다.  
+reschedule 메서드는 Event의 일정을 인자로 전달된 RecurringSchedule의 조건에 맞게 변경한다.  
+isSatisfied 메서드는 Event가 RecurringSchedule에 설정된 조건을 만족하지 못할 경우 Event의 상태를 조건을 만족시키도록 <mark>변경한 후</mark> false를 반환한다.  
+(예를 들어, 2019년 5월 9일에 일어나는 Event의 isSatisfied 메서드에 매주 수요일마다 반복적으로 발생하는 일정을 가리키는 RecurringSchedule을 전달할 경우 Event의 시작 일자는 2019년 5월 8일로 변경되고 반 환 값으로 false가 반환되는 것이다.)  
+issatisfied는 현재 명령과 쿼리의 두 가지 역할을 동시에 수행하고 있다. (버그를 찾기 어려워진다.)  
+  
+기능을 추가하는 과정에서 누군가 Event가 RecurringSchedule의 조건에 맞지 않을 경우 Event의 상태를 수정해야 한다는 요구사항을 추가했고,  
+프로그래머는 별다른 생각 없이 기존에 있던 issatisfied 메서드에 reschedule 메서드를 호출하는 코드를 추가해 버린 것이다.  
+<mark>명령과 쿼리를 뒤섞으면 실행 결과를 예측하기가 어려워질 수 있다.</mark> 
+
+겉으로 보기에는 쿼리처럼 보이지만 내부적으로 부수효과를 가지는 메서드는 이해하기 어렵고, 잘못 사용하기 쉬우며, 버그를 양산하는 경향이 있다.  
+가장 깔끔한 해결책은 명령과 쿼리를 명확하게 분리하는 것이다.
+
+```java
+public class Event {
+
+    public boolean isSatisfied(RecurringSchedule schedule) {
+        // reschedule 제거
+    }
+
+    public void reschedule(RecurringSchedule schedule) {
+    }
+}
+```
+인터페이스를 살펴보면, isSatisfied 메서드는 반환 값을 돌려주고 reschedule 메서드는 반환 값을 돌 려주지 않는다.  
+Event는 현재 명령과 쿼리를 분리한 상태이므로 인터페이스를 훑어보는 것만으로도 isSatisfied 메서드가 쿼리이고, reschedule 메서드가 명령이라는 사실을 한눈에 알 수 있다.  
+반환 값을 돌려주는 메서드는 쿼리이므로 부수효과에 대한 부담이 없다. 따라서 몇 번을 호출하더라도 다른 부분에 영향을 미치지 않는다.  
+반면 반환 값을 가지지 않는 메서드는 모두 명령이므로 해당 메서 드를 호출할 때는 부수효과에 주의해야 한다.  
+어떤 메서드가 부수효과를 가지는지를 확인하기 위해 코 드를 일일이 다 분석하는 것보다는 메서드가 반환값을 가지는지 여부만 확인하는 것이 훨씬 간단하지 않겠는가?  
+
+명령과 쿼리를 분리하면서 reschedule 메서드의 가시성이 private에서 public으로 변경됐다  
+이제 Event가 RecurringSchedule의 조건을 만족시키지 않을 경우 reschedule 메서드를 호출할지 여부를 Event를 사용 하는 쪽에서 결정할 수 있다.  
+퍼블릭 인터페이스를 설계할 때 부수효과를 가지는 대신 값을 반환하지 않는 명령과 부수효과를 가지지 않는 대신 값을 반환하는 쿼리를 분리하기 바란다.  
+그 결과, 코드는 예측 가능하고 이해하기 쉬우며 디버깅이 용이한 동시에 유지보수가 수월해질 것 이다.  

@@ -16,16 +16,15 @@ public class Event {
 
     public boolean isSatisfied(RecurringSchedule schedule) {
         if (from.getDayOfWeek() != schedule.getDayOfWeek() ||
-                !from.toLocalTime().equals(schedule.getFrom()) ||
-                !duration.equals(schedule.getDuration())) {
-            reschedule(schedule);
+            !from.toLocalTime().equals(schedule.getFrom()) ||
+            !duration.equals(schedule.getDuration())) {
             return false;
         }
 
         return true;
     }
 
-    private void reschedule(RecurringSchedule schedule) {
+    public void reschedule(RecurringSchedule schedule) {
         from = LocalDateTime.of(from.toLocalDate().plusDays(daysDistance(schedule)),
             schedule.getFrom());
         duration = schedule.getDuration();

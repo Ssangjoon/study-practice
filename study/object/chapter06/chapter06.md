@@ -125,3 +125,40 @@
 객체의 상태를 변경하는 명령은 반환값을 가질 수 없고, 객체의 정보를 반환하는 쿼리는 상태를 변경할 수 없다.  
 한 문장으로 표현하면 "질문이 답변을 수정해서는 안 된다"는 것이다.  
 그렇다면 명령과 쿼리를 분리해서 얻게 되는 장점은 무엇일까? 
+
+```
+public class Event {
+    private String subject;
+    private LocalDateTime from; //시작일시
+    private Duration duration; //소요시간
+
+    public Event(String subject, LocalDateTime from, Duration duration) {
+        this.subject = subject;
+        this.from = from;
+        this.duration = duration;
+    }
+
+    public boolean isSatisfied(RecurringSchedule schedule) {
+        if (from.getDayOfWeek() != schedule.getDayOfWeek() ||
+                !from.toLocalTime().equals(schedule.getFrom()) ||
+                !duration.equals(schedule.getDuration())) {
+            reschedule(schedule);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void reschedule(RecurringSchedule schedule) {
+        from = LocalDateTime.of(from.toLocalDate().plusDays(daysDistance(schedule)),
+            schedule.getFrom());
+        duration = schedule.getDuration();
+    }
+
+    private long daysDistance(RecurringSchedule schedule) {
+        return schedule.getDayOfWeek().getValue() - from.getDayOfWeek().getValue();
+    }
+}
+```
+
+isSatisfied 메서드는 Event 객체가 인자로 전달된 RecurringSchedule 객체와 일치하는지를 검사한다.  

@@ -6,10 +6,9 @@ include("study:object:chapter04")
 include("study:object:chapter05")
 include("study:object:chapter06")
 include("study:object:chapter07")
+include("study:object:chapter08")
 
 include("study:head-first-design-pattern")
-
 include("practice:object:reservationAgency")
 include("practice:spring-transaction")
 include("practice:modern-java")
-include("study:object:chapter07")
